@@ -50,3 +50,43 @@ jobs:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=cloudbackenddev_cloudnativedemo
+  build:
+    needs: sonar
+    name: Build and publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: setup JDK and Maven
+        uses: ./.github/actions/setup-java-maven
+        with:
+          java-version: '11'
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: Generate version
+        id: versioning
+        uses: PaulHatch/semantic-version@v4.0.2
+        with:
+          tag_prefix: "v"
+          major_pattern: "BREAKING CHANGE:"
+          minor_pattern: "feat:"
+          format: "v${major}.${minor}.${patch}-prerelease${increment}"
+      - name: Build, tag, and push docker image to Amazon ECR
+        uses: ./.github/actions/build-push-ecr
+        with:
+          image-version: ${{ steps.versioning.outputs.version }}
+          image-name: ${{env.DOCKER_IMAGE}}
+          aws-account-id: ${{secrets.AWS_ACCOUNT_ID}}
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          tag_name: ${{ steps.versioning.outputs.version }}
+          release_name: ${{ steps.versioning.outputs.version }}
+          prerelease: true

@@ -1,0 +1,34 @@
+name: release-ci
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # Fetch all commits
+          fetch-depth: 0
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Set environment variables
+        run: |
+          cat >> $GITHUB_ENV << EOF
+          VERSION=${GITHUB_REF##*/}
+          EOF
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        uses: ./.github/actions/build-push-ecr
+        with:
+          image-version: ${{ env.VERSION }}
+          aws-account-id: ${{secrets.AWS_ACCOUNT_ID}}

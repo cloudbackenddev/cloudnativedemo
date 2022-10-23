@@ -16,6 +16,8 @@
 	<properties>
 		<java.version>11</java.version>
 		<google-java-format.version>1.15.0</google-java-format.version>
+		<sonar.organization>cloudbackenddev</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -73,6 +75,11 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.4.0.905</version>
 			</plugin>
 		</plugins>
 	</build>

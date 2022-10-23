@@ -1,0 +1,39 @@
+name: Composite java action
+description: Setup JDK and maven
+
+inputs:
+  distribution:
+    description: Which JDK to use
+    default: temurin
+  java-version:
+    description: Major version of JDK
+    required: true
+  maven-version:
+    description: Version of Maven to use
+    required: false
+    default: 3.8.6
+  overwrite-settings:
+    description: Overwrite settings.xml
+    required: false
+    default: false
+  cache:
+    description: Cache java artifacts
+    required: false
+    default: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup java
+      if: ${{ inputs.cache }}
+      uses: actions/setup-java@v3.5.0
+      with:
+        distribution: ${{ inputs.distribution }}
+        overwrite-settings: ${{ inputs.overwrite-settings }}
+        java-version: ${{ inputs.java-version }}
+        cache: ${{ inputs.cache == 'true' && 'maven' || '' }}
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.4
+      with:
+        maven-version: ${{ inputs.maven-version }}

@@ -1,0 +1,26 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: CI pipeline
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+env:
+  DOCKER_IMAGE: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && 'demo-app-staging' || 'demo-app-snap' }}
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: setup JDK and Maven
+        uses: ./.github/actions/setup-java-maven
+        with:
+          java-version: '11'
+      - name: run tests
+        run: mvn -B test

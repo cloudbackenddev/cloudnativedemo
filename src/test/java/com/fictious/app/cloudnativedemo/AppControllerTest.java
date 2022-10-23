@@ -23,4 +23,9 @@ public class AppControllerTest {
         assertEquals(20, currenciesLength);
     }
 
+    @Test
+    void personsLength() {
+        Integer personsLength = appController.getRandomPersons().size();
+        assertEquals(10, personsLength);
+    }
 }

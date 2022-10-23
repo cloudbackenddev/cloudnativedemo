@@ -51,6 +51,8 @@ jobs:
            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=cloudbackenddev_cloudnativedemo
   build:
+    needs: sonar
+    name: Build and publish
     runs-on: ubuntu-latest
     permissions:
       id-token: write
